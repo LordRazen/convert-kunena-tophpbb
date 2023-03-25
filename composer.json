@@ -1,0 +1,22 @@
+{
+    "name": "lordrazen/forum-migration",
+    "description": "Kunena 5 to phpbb 3 Migration",
+    "type": "project",
+    "license": "GPL",
+    "authors": [
+        {
+            "name": "LordRazen",
+            "email": "razen.mailer@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=8.0",
+        "catfan/medoo": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "Src\\": "src/"
+        }
+    }
+}
