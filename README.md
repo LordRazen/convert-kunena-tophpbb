@@ -51,6 +51,8 @@ Run the index.php as a cronjob untill everything is migrated. What's done:
 - Topics, Posts and Attachments are migrated
 - The Threads and Posts shown in the Forum Overview are adjusted since this is not done automatically but stored in the forum table.
 
+BTW: There're also browser extensions for local cronjobs like "Tab Auto Refresh" for Firefox
+
 # Attachments and Avatars
 After the migration is done, you have to upload the avatars and the attachments:
 - Upload the avatars to images/avatars/upload
@@ -60,3 +62,11 @@ After the migration is done, you have to upload the avatars and the attachments:
 If you wanna rerun everything, just start the cleanup.php once. However, the cleanup does not do a real truncate, the so the id counter
 will rise more and more. Since there might be data in the tables already (like in the users table), I recommend to restore the 
 tables from above if you want a fresh restart of the migration.
+
+---
+
+If I could help you with your migration I would be happy if you value it with a little donation ;-)
+
+You can contact me here: razen.mailer@gmail.com
+
+Thx a lot ^^

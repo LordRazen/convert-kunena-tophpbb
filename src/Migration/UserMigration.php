@@ -95,6 +95,8 @@ abstract class UserMigration
                     copy($avatarPath, DIR_AVATARS . $avatarFilenameLocal);
                     list($width, $height) = getimagesize(DIR_AVATARS . $avatarFilenameLocal);
                 }
+            } else {
+                $avatarFilenameDB = ''; # Reset Avatar Filename
             }
 
             # Build UserData
@@ -128,7 +130,7 @@ abstract class UserMigration
                 unset($userData["username_clean"]);
                 unset($userData["user_email"]);
                 unset($userData["user_form_salt"]);
-                
+
                 $userData["user_id"] = $matchID;
                 if (!empty($userData["user_avatar"])) {
                     $userData["user_avatar"] = str_replace(
