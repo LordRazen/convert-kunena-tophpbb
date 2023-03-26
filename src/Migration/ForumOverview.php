@@ -49,7 +49,7 @@ abstract class ForumOverview
             echo '<h1>Iteration '  . $i . '</h1>';
             foreach ($forums as $forum) :
                 $forumId = (int) $forum["forum_id"];
-                var_dump($forumId);
+                // var_dump($forumId);
 
                 ### LATEST THREADS IN SUBFORUMS AND FORUM ITSSELF
 
@@ -77,7 +77,7 @@ abstract class ForumOverview
                     ],
                 );
                 if (!empty($latestTopic)) $latestTopic = $latestTopic[0];
-                var_dump($latestTopic);
+                // var_dump($latestTopic);
 
                 $forumData = [];
                 $lastPostInForum = isset($latestTopic["topic_last_post_time"])

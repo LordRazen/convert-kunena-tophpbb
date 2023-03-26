@@ -45,16 +45,21 @@ $config['last_topic'] = 0;
 Config::save($config);
 
 # Remove existing users of type 0 from DB (does not touch the google bots and admin from a fresh installation)
-// $phpbbDB->delete(Utils::getPhpBBTable('users'), ["user_type" => 0]);
+$phpbbDB->delete(Utils::getPhpBBTable('users'), ["user_type" => 0]);
 
 # Truncate several phpbb tables (not a read truncate, but delete all records)
 $phpbbDB->delete(Utils::getPhpBBTable('topics'), []);
 $phpbbDB->delete(Utils::getPhpBBTable('topics_posted'), []);
 $phpbbDB->delete(Utils::getPhpBBTable('posts'), []);
+$phpbbDB->delete(Utils::getPhpBBTable('attachments'), []);
 
-# Remove avatars from a potential last migration
+# Remove avatars and attachments from a potential last migration
 $files = glob(DIR_AVATARS . '/*');
 foreach ($files as $file) {
+    if (is_file($file)) unlink($file);
+}
+$attachments = glob(DIR_ATTACHMENTS . '/*');
+foreach ($attachments as $file) {
     if (is_file($file)) unlink($file);
 }
 

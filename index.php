@@ -64,4 +64,4 @@ switch ($config["job"]):
 endswitch;
 
 # Save Config
-Config::save($config);
+// Config::save($config);

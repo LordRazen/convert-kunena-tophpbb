@@ -22,13 +22,13 @@ abstract class TopicMigration
         $kunena_topics = Utils::getKunenaTable('kunena_topics');
         $kunena_messages = Utils::getKunenaTable('kunena_messages');
         $kunena_messages_text = Utils::getKunenaTable('kunena_messages_text');
-        $kunena_attachements = Utils::getKunenaTable('kunena_attachements');
+        $kunena_attachments = Utils::getKunenaTable('kunena_attachments');
 
         $phpbb_users = Utils::getPhpBBTable('users');
         $phpbb_topics = Utils::getPhpBBTable('topics');
         $phpbb_topics_posted = Utils::getPhpBBTable('topics_posted');
         $phpbb_posts = Utils::getPhpBBTable('posts');
-        $phpbb_attachements = Utils::getPhpBBTable('attachements');
+        $phpbb_attachments = Utils::getPhpBBTable('attachments');
 
         # Get Topics
         $topics = $GLOBALS["kunenaDB"]->select(
@@ -52,10 +52,12 @@ abstract class TopicMigration
             # Update last edited topic in config
             $GLOBALS["config"]["last_topic"] = $topic["id"];
 
-            # Hold 2 = Deleted
-            if ((int) $topic["hold"] >= 2) continue;
+            # Hold 2 = Deleted, Hold 3 => unknown TODO
+            if ((int) $topic["hold"] == 2) continue;
+
 
             # Get Messages of the thread
+            # TODO: Aware of combined threads! 1151, 1152
             $topicMessages = $GLOBALS["kunenaDB"]->select(
                 $kunena_messages,
                 ['[>]' . $kunena_messages_text => ['id' => 'mesid']],
@@ -79,6 +81,7 @@ abstract class TopicMigration
                 ],
                 ["thread" => (int) $topic["id"]]
             );
+            // var_dump($topicMessages);
 
             # Found topic without messages. Do not migrate and continue with next
             if (empty($topicMessages)) {
@@ -91,7 +94,6 @@ abstract class TopicMigration
             // var_dump($topic);
             $starterUserId = 0;
             try {
-                // var_dump($topic);
                 $starterUserId = self::findUser($topic["first_post_userid"], $topic["first_post_guest_name"]);
             } catch (Exception) {
                 $starterUserId = 1;
@@ -167,9 +169,11 @@ abstract class TopicMigration
                 die();
             }
 
+            # Attachment Count for Thread
+            $topicAttachments = 0;
+
             # Foreach Message:
             foreach ($topicMessages as $message) :
-
                 # Get (new) User ID (after Migration to phpbb)
                 // var_dump($message);
                 $newUserId = 0;
@@ -177,12 +181,83 @@ abstract class TopicMigration
                     // var_dump($message);
                     $newUserId = self::findUser($message["userid"], $message["name"]);
                 } catch (Exception) {
-                    $starterUserId = 1;
+                    $newUserId = 1;
                     Utils::writeToLog("Set UserID to 1 / Anonymous since it was not found within the database. "
                         . "Check in Kunena! Message ID: " . $message["id"]
                         . ", TopicID: " . $message["thread"]
                         . ", Poster: " . $message["name"], true);
                 }
+
+                # Check if there're attachments
+                $postattachments = 0;
+                $attachments = $GLOBALS["kunenaDB"]->select(
+                    $kunena_attachments,
+                    '*',
+                    ['mesid' => $message["id"]]
+                );
+
+                foreach ($attachments as $attachement) :
+                    $filePath = $GLOBALS["config"]["joomla_url"] . $attachement["folder"] . '/' . $attachement["filename_real"];
+                    $fileHeader = @get_headers($filePath);
+                    if (!$fileHeader || $fileHeader[0] == 'HTTP/1.1 404 Not Found') {
+                        Utils::writeToLog("Attachment not found: " . $filePath, false, true);
+                    } else {
+                        # Attachment found
+                        $physical_filename = $newUserId . '_' . md5(file_get_contents($filePath));
+                        copy($filePath, DIR_ATTACHMENTS . $physical_filename);
+                        $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+
+                        # Get the file mimetype
+                        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                        $file_mimetype = finfo_file($finfo, DIR_ATTACHMENTS . $physical_filename);
+                        finfo_close($finfo);
+
+                        # Get the file size
+                        $fileSize = filesize(DIR_ATTACHMENTS . $physical_filename);
+
+                        unlink(DIR_ATTACHMENTS . $physical_filename);
+
+                        # Read the file in binary mode
+                        $ch = curl_init();
+                        curl_setopt($ch, CURLOPT_URL, $filePath);
+                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                        $file_content = curl_exec($ch);
+                        if ($file_content === false) {
+                            die('Error downloading file');
+                        }
+                        if (file_put_contents(DIR_ATTACHMENTS . $physical_filename, $file_content) === false) {
+                            die('Error creating local file');
+                        }
+                        echo 'File downloaded and saved as ';
+                    }
+
+                    $attachmentData = [
+                        'attach_id' => $attachement["id"],
+                        'post_msg_id' => $message["id"],
+                        'topic_id' => $topic["id"],
+                        'is_orphan' => 0,
+                        'physical_filename' => $physical_filename,
+                        'real_filename' => $attachement["filename_real"],
+                        'extension' => $extension,
+                        'mimetype' => $file_mimetype,
+                        'filesize' => $fileSize,
+                        'filetime' => $message["time"],
+                        'thumbnail' => '',
+                    ];
+                    // var_dump($attachmentData);
+
+                    # Insert attachment
+                    try {
+                        $GLOBALS["phpbbDB"]->insert($phpbb_attachments, $attachmentData);
+                        $postattachments++;
+                        $topicAttachments++;
+                    } catch (PDOException $e) {
+                        Utils::writeToLog('Error in Attachment Migration: ', false, true);
+                        Utils::writeToLog($e->getMessage(), false, true);
+                        var_dump($e->errorInfo);
+                        var_dump($attachmentData);
+                    }
+                endforeach;
 
                 $postData = [
                     'post_id' => $message["id"],
@@ -197,6 +272,7 @@ abstract class TopicMigration
                     // 'post_postcount' => $message[""],
                     'post_visibility' => 1,
                     // 'post_delete_time' => $message[""],
+                    'post_attachment' => $postattachments,
                 ];
 
                 # Insert posting
@@ -210,6 +286,15 @@ abstract class TopicMigration
                     var_dump($postData);
                 }
             endforeach;
+
+            # Update topic attachement count
+            if ($topicAttachments > 0) {
+                $GLOBALS["phpbbDB"]->update(
+                    $phpbb_topics,
+                    ['topic_attachment' => $topicAttachments,],
+                    ['topic_id' => $topic["id"]]
+                );
+            }
             echo '<hr>';
         endforeach;
 
