@@ -10,7 +10,7 @@ And nope I had no interest in putting even more effort into this since I'm happy
 
 Feel free to do a PR if you want.
 
-## Installation
+# Installation
 - Clone the git repository
 - Install it with "composer install"
 - Run the index.php a first time in order to generate the work folder and the config file
