@@ -6,6 +6,8 @@ The migration is not made as a "out of the box" solution and it requires some kn
 
 However, since no other converter worked for me I started my own untill I was happy with the result. 
 
+Some parts might also not work out for you, so I commented a lot and you might see some handy var_dumps to uncomment if you need.
+
 And nope I had no interest in putting even more effort into this since I'm happy to get the job done ;-)
 
 Feel free to do a PR if you want.
