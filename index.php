@@ -2,7 +2,7 @@
 <?php
 include(dirname(__FILE__) . "/include.php");
 
-use Src\Utils\Config;
+use Src\Utils\MigrationConfig;
 use Medoo\Medoo;
 use Src\Forum\ForumMigration;
 use Src\Migration\ForumOverview;
@@ -14,17 +14,17 @@ echo '<h3>Forum Migration: Joomla 3.10 + Kunena 5.X to phpBB 3.3</h3>';
 echo '<p><a href="cleanup.php" target="_blank">Start Cleanup for fresh migration run!</a></p>';
 
 # Read Config
-$config = Config::read();
+$migrationConfig = MigrationConfig::read();
 
 # Try Database Connection with Medoo Framework
 # https://medoo.in/
 try {
     $kunenaDB = new Medoo([
-        'type' => $config['kunena_db_type'],
-        'host' => $config['kunena_db_host'],
-        'database' => $config['kunena_db_database'],
-        'username' => $config['kunena_db_username'],
-        'password' => $config['kunena_db_password'],
+        'type' => $migrationConfig['kunena_db_type'],
+        'host' => $migrationConfig['kunena_db_host'],
+        'database' => $migrationConfig['kunena_db_database'],
+        'username' => $migrationConfig['kunena_db_username'],
+        'password' => $migrationConfig['kunena_db_password'],
         'charset' => 'utf8'
     ]);
     Utils::writeToLog('Connected to Joomla / Kunena', false, true);
@@ -35,11 +35,11 @@ try {
 
 try {
     $phpbbDB = new Medoo([
-        'type' => $config['phpbb_db_type'],
-        'host' => $config['phpbb_db_host'],
-        'database' => $config['phpbb_db_database'],
-        'username' => $config['phpbb_db_username'],
-        'password' => $config['phpbb_db_password'],
+        'type' => $migrationConfig['phpbb_db_type'],
+        'host' => $migrationConfig['phpbb_db_host'],
+        'database' => $migrationConfig['phpbb_db_database'],
+        'username' => $migrationConfig['phpbb_db_username'],
+        'password' => $migrationConfig['phpbb_db_password'],
         'charset' => 'utf8'
     ]);
     Utils::writeToLog('Connected to phpBB', false, true);
@@ -48,8 +48,15 @@ try {
     die();
 }
 
+# INCLUDE PHPBB
+define('IN_PHPBB', true);
+$phpbb_root_path = dirname(__FILE__) . $migrationConfig['phpbb_folder'];
+$phpEx = substr(strrchr(__FILE__, '.'), 1);
+include($phpbb_root_path . 'common.' . $phpEx);
+include($phpbb_root_path . 'includes/functions_posting.' . $phpEx);
+
 # Different Migrations: Turn on one by one so the jobs dont take to long.
-switch ($config["job"]):
+switch ($migrationConfig["job"]):
     case UserMigration::JOB:
         UserMigration::start();
         break;
@@ -64,4 +71,4 @@ switch ($config["job"]):
 endswitch;
 
 # Save Config
-Config::save($config);
+MigrationConfig::save($migrationConfig);

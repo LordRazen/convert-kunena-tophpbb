@@ -4,7 +4,7 @@
  * Forum Migration Root
  */
 
-namespace Src\Forum;
+namespace Src\Models\Forum;
 
 use Exception;
 use Src\Utils\Utils;
@@ -27,7 +27,7 @@ abstract class ForumMigration
             Utils::writeToLog('==== ERROR! ====', 0, true);
             self::writeErrorToLog($e);
 
-            $GLOBALS["config"]["job"] === self::ERROR;
+            $GLOBALS["migrationConfig"]["job"] === self::ERROR;
         }
     }
 
@@ -36,8 +36,8 @@ abstract class ForumMigration
         Utils::writeToLog('', 0, true);
 
         Utils::writeToLog('Config:', 0, true);
-        foreach ($GLOBALS["config"] as $key => $configEntry) :
-            Utils::writeToLog($key . ": " . $configEntry, 1, true);
+        foreach ($GLOBALS["migrationConfig"] as $key => $migrationConfigEntry) :
+            Utils::writeToLog($key . ": " . $migrationConfigEntry, 1, true);
         endforeach;
         Utils::writeToLog('', 0, true);
 

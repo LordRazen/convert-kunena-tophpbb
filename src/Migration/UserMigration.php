@@ -2,6 +2,10 @@
 
 /**
  * UserMigration
+ * 
+ * Joomla Kunena ID is stored in phpbb field "user_lastpost_time" 
+ * since the IDs of the users are changed 
+ * and need to be stored somewhere temporary.
  */
 
 namespace Src\Migration;
@@ -56,24 +60,24 @@ abstract class UserMigration
                 $kunena_users . '.birthdate',
             ],
             [
-                "id[>]" => $GLOBALS["config"]["last_user"],
-                "LIMIT" => $GLOBALS["config"]["migrations_at_once"]
+                "id[>]" => $GLOBALS["migrationConfig"]["last_user"],
+                "LIMIT" => $GLOBALS["migrationConfig"]["migrations_at_once"]
             ]
         );
 
         # No more Users
         if (empty($users)) {
             Utils::writeToLog("User Migration finished!", false, true);
-            $GLOBALS["config"]["job"] = TopicMigration::JOB;
+            $GLOBALS["migrationConfig"]["job"] = TopicMigration::JOB;
             return;
         }
 
         # Match Users from certain kunena IDs to phpbb IDs
-        $matchUsers = json_decode($GLOBALS["config"]["match_user_kunenaId_phpbbId"], true);
+        $matchUsers = json_decode($GLOBALS["migrationConfig"]["match_user_kunenaId_phpbbId"], true);
 
         foreach ($users as $user) :
             # Update last edited user in config
-            $GLOBALS["config"]["last_user"] = $user["id"];
+            $GLOBALS["migrationConfig"]["last_user"] = $user["id"];
 
             # Dates
             $registration = strtotime($user["registerDate"]);
@@ -83,10 +87,10 @@ abstract class UserMigration
             # Avatar
             if (!empty($user["avatar"])) {
                 # The avatars should be in this folder of your Joomla installations. Adjust if needed
-                $avatarPath = $GLOBALS["config"]["joomla_url"] . 'media/kunena/avatars/' . $user["avatar"];
+                $avatarPath = $GLOBALS["migrationConfig"]["joomla_url"] . 'media/kunena/avatars/' . $user["avatar"];
                 $avatarHeader = @get_headers($avatarPath);
                 if (!$avatarHeader || $avatarHeader[0] == 'HTTP/1.1 404 Not Found') {
-                    Utils::writeToLog("User should have an avatar but file was not found: " . $user["username"], false, true);
+                    Utils::writeToLog("User should have an avatar but file was not found: " . $user["username"], true, true);
                 } else {
                     # Avatar found
                     $avatarFormat = substr($user["avatar"], strrpos($user["avatar"], '.') + 1);

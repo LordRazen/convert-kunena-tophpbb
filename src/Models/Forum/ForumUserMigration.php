@@ -4,7 +4,7 @@
  * Prepare Users
  */
 
-namespace Src\Forum;
+namespace Src\Models\Forum;
 
 use Src\ForumModels\Topic;
 use Src\Utils\Utils;

@@ -29,7 +29,7 @@ function left_right_ids($groups, $parent_id, &$forums, &$node)
 */
 function insert_forums()
 {
-  global $db, $src_db, $convert, $config;
+  global $db, $src_db, $convert, $migrationConfig;
 
   truncate_table(FORUMS_TABLE);
 
@@ -401,12 +401,12 @@ function get_file_extension($filename) {
 }
 
 function import_attachment_file($srcname) {
-  global $config, $convert;
+  global $migrationConfig, $convert;
 
   $trgname = $convert->row['userid'] . '_' . md5($srcname);
 
   $srcpath = $convert->options['forum_path'] . '/media/kunena/attachments/' . $convert->row['userid'] . '/' . $srcname;
-  $trgpath = $config['upload_path'] . '/'. $trgname;
+  $trgpath = $migrationConfig['upload_path'] . '/'. $trgname;
 
   //var_dump($convert->row);
   //var_dump(array($srcpath, $trgpath));
@@ -436,4 +436,3 @@ function fix_orphans() {
   $db->sql_query('UPDATE ' . TOPICS_TABLE . ' SET topic_poster = ' . ANONYMOUS . ' WHERE topic_poster NOT IN (SELECT user_id FROM ' . USERS_TABLE . ')');
   $db->sql_query('UPDATE ' . TOPICS_TABLE . ' SET topic_last_poster_id = ' . ANONYMOUS . ' WHERE topic_last_poster_id NOT IN (SELECT user_id FROM ' . USERS_TABLE . ')');
 }
-?>

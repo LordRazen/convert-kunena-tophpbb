@@ -4,10 +4,9 @@
  * Prepare Topics
  */
 
-namespace Src\Forum;
+namespace Src\Models\Forum;
 
-use Src\ForumModels\Forum;
-use Src\ForumModels\Topic;
+use Src\Models\ForumModels\Topic;
 use Src\Utils\Utils;
 
 abstract class ForumTopicMigration

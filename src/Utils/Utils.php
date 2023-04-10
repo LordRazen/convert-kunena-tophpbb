@@ -38,7 +38,7 @@ class Utils
      */
     public static function getKunenaTable(string $tablename): string
     {
-        $fullname = $GLOBALS["config"]["joomla_prefix"] . $tablename;
+        $fullname = $GLOBALS["migrationConfig"]["joomla_prefix"] . $tablename;
         try {
             $GLOBALS["kunenaDB"]->has($fullname, []);
             Utils::writeToLog("Table found: " . $fullname);
@@ -57,7 +57,7 @@ class Utils
      */
     public static function getPhpBBTable(string $tablename): string
     {
-        $fullname = $GLOBALS["config"]["phpbb_prefix"] . $tablename;
+        $fullname = $GLOBALS["migrationConfig"]["phpbb_prefix"] . $tablename;
         try {
             $GLOBALS["phpbbDB"]->has($fullname, []);
             Utils::writeToLog("Table found: " . $fullname);

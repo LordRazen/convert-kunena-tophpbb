@@ -160,7 +160,7 @@ if (!$get_info)
         array('user_email',       'users.email',            ''),
         array('user_email_hash',  'users.email',            'gen_email_hash'),
         array('user_password',    'users.password',         ''),
-        array('user_style',       $config['default_style'], ''),
+        array('user_style',       $migrationConfig['default_style'], ''),
         array('user_permissions', '',                       ''),
         array('user_sig',         'kunena_users.signature', ''),
         array('user_posts',       'kunena_users.posts',     'null_to_zero'),
@@ -253,4 +253,3 @@ if (!$get_info)
     ),
   );
 }
-?>

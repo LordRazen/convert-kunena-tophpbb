@@ -4,7 +4,7 @@
  * Forum
  */
 
-namespace Src\ForumModels;
+namespace Src\Models\ForumModels;
 
 abstract class Forum
 {
@@ -20,7 +20,7 @@ abstract class Forum
 
 
 
-        // $GLOBALS["database"]->insert("phpbb_forums", [
+        // $GLOBALS["phpbbDB"]->insert("phpbb_forums", [
         //     'forum_id' => (int) $forum["id"],
         //     'parent_id' => (int) $forum["parent_id"],
         //     'left_id' => isset($forum["left_id"]) ?  $forum["left_id"] : 0,
@@ -42,5 +42,22 @@ abstract class Forum
         //     // 'published_at' => $forum['publish_up'],
         //     // 'datapacks' => $newDatapackVersionString,
         // ]);
+    }
+
+    /**
+     * Remove Forum Last Post / Topic Info
+     */
+    public static function removeLastPostInfo()
+    {
+        $GLOBALS["phpbbDB"]->update('phpbb_forums', [
+            "forum_last_post_id" => '',
+            "forum_last_poster_id" => 0,
+            "forum_last_post_subject" => '',
+            "forum_last_post_time" => '',
+            "forum_last_poster_name" => '',
+            "forum_last_poster_colour" => '',
+            "forum_posts_approved" => '',
+            "forum_topics_approved" => '',
+        ]);
     }
 }

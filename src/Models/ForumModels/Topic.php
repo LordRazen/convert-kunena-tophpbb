@@ -4,7 +4,7 @@
  * Topic
  */
 
-namespace Src\ForumModels;
+namespace Src\Models\ForumModels;
 
 abstract class Topic
 {

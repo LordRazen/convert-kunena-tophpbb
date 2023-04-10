@@ -4,7 +4,7 @@ namespace Src\Utils;
 
 use Src\Migration\UserMigration;
 
-abstract class Config
+abstract class MigrationConfig
 {
     const CONFIG = "config.txt";
 
@@ -14,6 +14,9 @@ abstract class Config
     private static function configArray()
     {
         return [
+            # Local Installation of phpbb relative to the installation of the migration
+            'phpbb_folder' => '/../../phpbb/phpbb-forum/',
+
             # Database
             'kunena_db_type' => 'mysql',
             'kunena_db_host' => 'localhost',
@@ -59,23 +62,23 @@ abstract class Config
         }
 
         # Read Config
-        $config = include DIR_WORK . self::CONFIG;
+        $migrationConfig = include DIR_WORK . self::CONFIG;
 
         # Update Config
-        self::updateConfig($config);
+        self::updateConfig($migrationConfig);
 
-        return $config;
+        return $migrationConfig;
     }
 
     /**
      * Update Config
      */
-    private static function updateConfig(array &$config)
+    private static function updateConfig(array &$migrationConfig)
     {
         $defaultConfig = self::configArray();
         foreach ($defaultConfig as $key => $defaultConfigEntry) :
-            if (!array_key_exists($key, $config)) {
-                $config[$key] = $defaultConfigEntry;
+            if (!array_key_exists($key, $migrationConfig)) {
+                $migrationConfig[$key] = $defaultConfigEntry;
                 Utils::writeToLog('Added to Config: ' . $key . ' => ' . $defaultConfigEntry, 1);
             }
         endforeach;
@@ -84,9 +87,9 @@ abstract class Config
     /**
      * Save config file
      */
-    public static function save($config)
+    public static function save($migrationConfig)
     {
-        $config = var_export($config, true);
-        file_put_contents(DIR_WORK . self::CONFIG, "<?php return $config ;");
+        $migrationConfig = var_export($migrationConfig, true);
+        file_put_contents(DIR_WORK . self::CONFIG, "<?php return $migrationConfig ;");
     }
 }

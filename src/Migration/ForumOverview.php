@@ -45,7 +45,7 @@ abstract class ForumOverview
         );
 
         # Check every forum
-        for ($i = 1; $i <= $GLOBALS["config"]["forum_depth"]; $i++) :
+        for ($i = 1; $i <= $GLOBALS["migrationConfig"]["forum_depth"]; $i++) :
             echo '<h1>Iteration '  . $i . '</h1>';
             foreach ($forums as $forum) :
                 $forumId = (int) $forum["forum_id"];
@@ -129,7 +129,7 @@ abstract class ForumOverview
             endforeach;
         endfor;
 
-        // $GLOBALS["config"]["job"] = '';
+        // $GLOBALS["migrationConfig"]["job"] = '';
 
         Utils::writeToLog("Forum Overview Migration finished!", false, true);
         Utils::writeToLog('=====', false, true);

@@ -4,7 +4,7 @@
  * Prepare ForumCategories
  */
 
-namespace Src\Forum;
+namespace Src\Models\Forum;
 
 use Src\ForumModels\Forum;
 use Src\Utils\Utils;

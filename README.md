@@ -15,6 +15,7 @@ Feel free to do a PR if you want.
 # Installation
 - Clone the git repository
 - Install it with "composer install"
+- Also make a blank local installation of phpbb and add all your custom bbcodes to it.
 - Run the index.php a first time in order to generate the work folder and the config file
 - Adjust the config so the migration can connect to your old joomla database and the new phpbb database
 
@@ -62,6 +63,7 @@ After the migration is done, you have to upload the avatars and the attachments:
 If you wanna rerun everything, just start the cleanup.php once. However, the cleanup does not do a real truncate, the so the id counter
 will rise more and more. Since there might be data in the tables already (like in the users table), I recommend to restore the 
 tables from above if you want a fresh restart of the migration.
+=> Settings -> Transfer -> Binary
 
 ---
 
