@@ -40,7 +40,7 @@ try {
 }
 
 # Reset Config
-$migrationConfig['job'] = TopicMigration::JOB; // TODO: UserMigration::JOB
+$migrationConfig['job'] = UserMigration::JOB; // TODO
 $migrationConfig['last_user'] = 0;
 $migrationConfig['last_topic'] = 0;
 
@@ -48,7 +48,7 @@ $migrationConfig['last_topic'] = 0;
 MigrationConfig::save($migrationConfig);
 
 # Remove existing users of type 0 from DB (does not touch the google bots and admin from a fresh installation)
-// $phpbbDB->delete(Utils::getPhpBBTable('users'), ["user_type" => 0]); // TODO: ENABLE
+$phpbbDB->delete(Utils::getPhpBBTable('users'), ["user_type" => 0]); // TODO
 
 # Truncate several phpbb tables
 $GLOBALS["phpbbDB"]->query("TRUNCATE `" . Utils::getPhpBBTable('topics') . "`");
@@ -65,11 +65,17 @@ $attachments = glob(DIR_ATTACHMENTS . '/*');
 foreach ($attachments as $file) {
     if (is_file($file)) unlink($file);
 }
+// $images = glob(DIR_IMAGES . '/*');
+// foreach ($images as $image) {
+//     if (is_file($image)) unlink($image);
+// }
 
 # Remove Log
 if (is_file(DIR_WORK . Utils::LOG)) unlink(DIR_WORK . Utils::LOG);
 
 # Remove Last Post / Thread info from Forums
 Forum::removeLastPostInfo();
+
+Utils::writeToLog("PLEASE DELETE THE work/images/* manually!!", true, true);
 
 Utils::writeToLog("Fresh migration run prepared!", true, true);

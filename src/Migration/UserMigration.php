@@ -50,6 +50,7 @@ abstract class UserMigration
                 # Joomla Data
                 $joomla_users . '.id',
                 $joomla_users . '.username',
+                $joomla_users . '.name',
                 $joomla_users . '.email',
                 $joomla_users . '.registerDate',
                 $joomla_users . '.lastvisitDate',
@@ -76,13 +77,27 @@ abstract class UserMigration
         $matchUsers = json_decode($GLOBALS["migrationConfig"]["match_user_kunenaId_phpbbId"], true);
 
         foreach ($users as $user) :
+            // // TODO: REMOVE NEXT 2 LINES
+            // var_dump($user);
+            // continue;
+            // if ($user["username"] !== "sheich zombie") continue;
+            // var_dump($user);
+
             # Update last edited user in config
             $GLOBALS["migrationConfig"]["last_user"] = $user["id"];
 
             # Dates
             $registration = strtotime($user["registerDate"]);
             $lastVisit = strtotime($user["lastvisitDate"]);
-            $birthday = strtotime($user["birthdate"]);
+
+            $birthday = '';
+            if ($user["birthdate"] !== '0001-01-01' && $user["birthdate"] !== '0000-00-00') {
+                $birthday = (date_format(date_create($user["birthdate"]), "d- m-Y"));
+                $birthday = str_replace("0001", "0", $birthday);
+                $birthday = str_replace("0000", "0", $birthday);
+            }
+            // var_dump($user["birthdate"]);
+            // var_dump($birthday);
 
             # Avatar
             if (!empty($user["avatar"])) {

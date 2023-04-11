@@ -59,16 +59,17 @@ After the migration is done, you have to upload the avatars and the attachments:
 - Upload the avatars to images/avatars/upload
 - Upload the attachments to the files folder. Ensure to turn on FTP Binary Upload first! Else the images will be broken
 
-# Cleanup
-If you wanna rerun everything, just start the cleanup.php once. However, the cleanup does not do a real truncate, the so the id counter
-will rise more and more. Since there might be data in the tables already (like in the users table), I recommend to restore the 
-tables from above if you want a fresh restart of the migration.
 => Settings -> Transfer -> Binary
 
----
+# Cleanup (before a fresh start of the migration)
+If you wanna rerun everything, just start the cleanup.php once. 
 
-If I could help you with your migration I would be happy if you value it with a little donation ;-)
+However, the cleanup does not do a real truncate, the so the id counter
+will rise more and more. Since there might be data in the tables already (like in the users table), I recommend to restore the 
+tables from above if you want a fresh restart of the migration.
 
-You can contact me here: razen.mailer@gmail.com
+Also the images inside work / images needs to be removed manually.
 
-Thx a lot ^^
+
+
+DURATION: 34 Minutes

@@ -15,8 +15,10 @@ const DIR_BASE  = __DIR__;
 const DIR_WORK = DIR_BASE . '/work/';
 const DIR_AVATARS = DIR_WORK . 'avatars/';
 const DIR_ATTACHMENTS = DIR_WORK . 'attachments/';
+const DIR_IMAGES = DIR_WORK . 'images/';
 
 # Init Folders
 if (!is_dir(DIR_WORK)) mkdir(DIR_WORK);
 if (!is_dir(DIR_AVATARS)) mkdir(DIR_AVATARS);
 if (!is_dir(DIR_ATTACHMENTS)) mkdir(DIR_ATTACHMENTS);
+if (!is_dir(DIR_IMAGES)) mkdir(DIR_IMAGES);

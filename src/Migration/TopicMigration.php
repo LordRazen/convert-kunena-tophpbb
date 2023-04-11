@@ -49,16 +49,17 @@ abstract class TopicMigration
 
         # Foreach Topic:
         foreach ($topics as $topic) :
+            echo '<hr>';
             # Update last edited topic in config
             $GLOBALS["migrationConfig"]["last_topic"] = $topic["id"];
 
-            # Hold 2 = Deleted, Hold 3 => unknown TODO
+            # Hold 2 = Deleted, Hold 3 => unknown 
             if ((int) $topic["hold"] == 2) {
-                Utils::writeToLog('Topic is deleted, Hold: 2, TopicId: ' . $topic["id"]);
+                // Utils::writeToLog('Topic is deleted, Hold: 2, TopicId: ' . $topic["id"]);
                 continue;
             }
             if ((int) $topic["hold"] == 3) {
-                Utils::writeToLog('Topic is deleted, Hold: 3, TopicId: ' . $topic["id"]);
+                // Utils::writeToLog('Topic is deleted, Hold: 3, TopicId: ' . $topic["id"]);
                 continue;
             }
 
@@ -85,7 +86,7 @@ abstract class TopicMigration
                     $kunena_messages_text . '.mesid',
                     $kunena_messages_text . '.message',
                 ],
-                ["thread" => (int) $topic["id"]]
+                ["thread" => (int) $topic["id"], "hold" => 0]
             );
             // var_dump($topicMessages);
 
@@ -209,7 +210,8 @@ abstract class TopicMigration
                 );
 
                 foreach ($attachments as $attachement) :
-                    $filePath = $GLOBALS["migrationConfig"]["joomla_url"] . $attachement["folder"] . '/' . $attachement["filename_real"];
+                    // TODO: Changed from filename_real to filename. Filename_real is probably the name with it was attached to the post while the filename is the one on the serer.
+                    $filePath = $GLOBALS["migrationConfig"]["joomla_url"] . $attachement["folder"] . '/' . $attachement["filename"];
                     $fileHeader = @get_headers($filePath);
                     if (!$fileHeader || $fileHeader[0] == 'HTTP/1.1 404 Not Found') {
                         Utils::writeToLog("Attachment not found: " . $filePath, false, true);
@@ -242,7 +244,7 @@ abstract class TopicMigration
                     if (file_put_contents(DIR_ATTACHMENTS . $physical_filename, $file_content) === false) {
                         die('Error creating local file');
                     }
-                    echo 'File downloaded and saved as ';
+                    Utils::writeToLog('Attachements: File downloaded and saved as ' . $physical_filename . ' / ' . $filePath, true);
 
                     $attachmentData = [
                         'attach_id' => $attachement["id"],
@@ -265,7 +267,7 @@ abstract class TopicMigration
                         $postattachments++;
                         $topicAttachments++;
                     } catch (PDOException $e) {
-                        Utils::writeToLog('Error in Attachment Migration: ', false, true);
+                        Utils::writeToLog('Attachements: Error in Attachment Migration: ', false, true);
                         Utils::writeToLog($e->getMessage(), false, true);
                         var_dump($e->errorInfo);
                         var_dump($attachmentData);
@@ -308,7 +310,6 @@ abstract class TopicMigration
                     ['topic_id' => $topic["id"]]
                 );
             }
-            echo '<hr>';
         endforeach;
 
         Utils::writeToLog('End Topic Migration', false, true);
@@ -365,6 +366,84 @@ abstract class TopicMigration
      */
     private static function convertMessage(string $message): string
     {
+        # Check for Joomla-stored images, replace the link and copy them
+        $joomlaRegex = '#\](https:\/\/minecraft-heads\.com\/images\/.*?)\[#';
+        $joomlaUrl = "https://minecraft-heads.com/images/";
+        $joomlaUrlReplace = "/images/";
+
+        // var_dump($message);
+        preg_match_all($joomlaRegex, $message, $matches);
+        if (!empty($matches[1])) :
+            foreach ($matches[1] as $match) :
+                # Copy the file to images
+                $fileContent = @file_get_contents($match);
+
+                if ($fileContent === false) {
+                    Utils::writeToLog("INSERTED: Image not found: " . $match);
+                    continue;
+                }
+
+                $filePath = str_replace($joomlaUrl, $joomlaUrlReplace, $match);
+                if (!file_exists(dirname(DIR_WORK . $filePath))) {
+                    mkdir(dirname(DIR_WORK . $filePath), 0777, true);
+                }
+                var_dump(DIR_WORK . $filePath);
+                file_put_contents(DIR_WORK . $filePath, $fileContent);
+                Utils::writeToLog("INSERTED: Image found and stored: " . $match);
+            endforeach;
+        endif;
+        $message = str_replace($joomlaUrl, $joomlaUrlReplace, $message);
+
+        # Remove included attachment links since the ids wont be correct anymore: 
+        $message = preg_replace(("#(\[attachment=[0-9]+\].*?\[\/attachment\])#"), "", $message);
+
+        # Replace Lists
+        $message = str_replace("[ul]", "[list]", $message);
+        $message = str_replace("[/ul]", "[/list]", $message);
+        $message = str_replace("[li]", "[*]", $message);
+        $message = str_replace("[/li]", "", $message);
+
+        # Replace colors (standard ones only)
+        $message = str_replace("[color=black]", "[color=#000000]", $message);
+        $message = str_replace("[color=orange]", "[color=#FFA500]", $message);
+        $message = str_replace("[color=red]", "[color=#FF0000]", $message);
+        $message = str_replace("[color=blue]", "[color=#0000FF]", $message);
+        $message = str_replace("[color=purple]", "[color=#800080]", $message);
+        $message = str_replace("[color=green]", "[color=#008000]", $message);
+        $message = str_replace("[color=white]", "[color=#FFFFFF]", $message);
+        $message = str_replace("[color=gray]", "[color=#808080]", $message);
+
+        # Replace Sizes
+        $message = str_replace("[size=1]", "[size=50]", $message);
+        $message = str_replace("[size=2]", "[size=85]", $message);
+        $message = str_replace("[size=3]", "[size=85]", $message);
+        $message = str_replace("[size=4]", "[size=100]", $message);
+        $message = str_replace("[size=5]", "[size=150]", $message);
+        $message = str_replace("[size=6]", "[size=200]", $message);
+
+        # Replace Emojis
+        $message = str_replace("B)", "8-)", $message);
+        $message = str_replace(":cheer:", ":D", $message);
+        $message = str_replace(":angry:", ":x", $message);
+        $message = str_replace(":unsure:", ":?", $message);
+        $message = str_replace(":ohmy:", ":o", $message);
+        $message = str_replace(":huh:", ":?", $message);
+        $message = str_replace(":dry:", ":?", $message);
+        $message = str_replace(":lol:", ":D", $message);
+        $message = str_replace(":sick:", ":oops:", $message);
+        $message = str_replace(":silly:", ":lol:", $message);
+        $message = str_replace(":blink:", ":shock:", $message);
+        $message = str_replace(":blush:", ":oops:", $message);
+        $message = str_replace(":kiss:", "", $message);
+        $message = str_replace(":woohoo:", ":P", $message);
+        $message = str_replace(":side:", "", $message);
+        $message = str_replace(":S", ":oops:", $message);
+        $message = str_replace(":evil:", ":twisted:", $message);
+        $message = str_replace(":whistle:", "", $message);
+        $message = str_replace(":pinch:", "", $message);
+
+
+
         $uid = $bitfield = $options = ''; // will be modified by generate_text_for_storage
         $allow_bbcode = $allow_urls = $allow_smilies = true;
         // var_dump($message);
