@@ -111,7 +111,7 @@ abstract class TopicMigration
                 Utils::writeToLog("UserID (starter) not found in phpBB. "
                     . "Topic ID: " . $topic["id"]
                     . ", Topic Title: " . $topic["subject"]
-                    . ", Poster: " . $topic["first_post_guest_name"], true);
+                    . ", Poster: " . $topic["first_post_guest_name"]);
             }
 
             $lastPosterId = 0;
@@ -126,7 +126,7 @@ abstract class TopicMigration
                 Utils::writeToLog("UserID (last) not found in phpBB. "
                     . "Topic ID: " . $topic["id"]
                     . ", Topic Title: " . $topic["subject"]
-                    . ", Poster: " . $topic["last_post_guest_name"], true);
+                    . ", Poster: " . $topic["last_post_guest_name"]);
             }
             $firstPosterColor = self::getUserColorFromId($starterUserId);
             $lastPosterColor = self::getUserColorFromId($lastPosterId);
@@ -198,7 +198,7 @@ abstract class TopicMigration
                     Utils::writeToLog("UserID not found in phpBB. "
                         . "Topic ID: " . $message["thread"]
                         . ", Message ID: " . $message["id"]
-                        . ", Poster: " . $message["name"], true);
+                        . ", Poster: " . $message["name"]);
                 }
 
                 # Check if there're attachments
